@@ -1,0 +1,84 @@
+[gd_scene format=3 uid="uid://d0yeu30nxkjto"]
+
+[ext_resource type="Shader" uid="uid://7hf2mpg6f6cv" path="res://placeholder-space.gdshader" id="1_a0tk4"]
+[ext_resource type="Script" uid="uid://6a837wf22owq" path="res://scripts/C#/FlockManager.cs" id="1_r3fl7"]
+[ext_resource type="Script" uid="uid://bbc308amp3nxe" path="res://scripts/C#/World.cs" id="2_jka67"]
+[ext_resource type="CompressedCubemap" uid="uid://d30ihrg70hmdw" path="res://skybox/skybox.png" id="2_r3fl7"]
+[ext_resource type="Script" uid="uid://c1nnefam1t4q4" path="res://scripts/C#/WorldStaticBody.cs" id="3_i5arm"]
+[ext_resource type="Script" uid="uid://4uwpxg0wack6" path="res://scripts/C#/Player.cs" id="3_jka67"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_6x32r"]
+top_radius = 0.0
+bottom_radius = 0.25
+height = 1.0
+
+[sub_resource type="MultiMesh" id="MultiMesh_poc8t"]
+transform_format = 1
+mesh = SubResource("CylinderMesh_6x32r")
+
+[sub_resource type="SphereMesh" id="SphereMesh_poc8t"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_poc8t"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ei4fd"]
+shader = ExtResource("1_a0tk4")
+shader_parameter/skybox = ExtResource("2_r3fl7")
+
+[sub_resource type="Sky" id="Sky_m8u1l"]
+sky_material = SubResource("ShaderMaterial_ei4fd")
+
+[sub_resource type="Environment" id="Environment_6x32r"]
+background_mode = 2
+sky = SubResource("Sky_m8u1l")
+sky_rotation = Vector3(3.3667402, 0.6789331, 0)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_poc8t"]
+
+[node name="Node3D" type="Node3D" unique_id=1887008118]
+
+[node name="FlockManager" type="Node3D" parent="." unique_id=929238075 node_paths=PackedStringArray("Planet")]
+script = ExtResource("1_r3fl7")
+SchoolCounts = PackedInt32Array(200, 200, 200, 200, 200)
+SearchRadius = 20.0
+Speed = 5.0
+FieldOfView = 120.0
+Planet = NodePath("../World")
+SpawnHeight = Vector2(0, 5)
+TurnRate = 0.5
+SeparationRadius = 1.0
+AlignmentRadius = 10.0
+
+[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="FlockManager" unique_id=1021739800]
+multimesh = SubResource("MultiMesh_poc8t")
+
+[node name="World" type="MeshInstance3D" parent="." unique_id=181653264]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
+layers = 3
+mesh = SubResource("SphereMesh_poc8t")
+script = ExtResource("2_jka67")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="World" unique_id=1641949880]
+script = ExtResource("3_i5arm")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/StaticBody3D" unique_id=693077690]
+shape = SubResource("SphereShape3D_poc8t")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=19940922]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1553100488]
+environment = SubResource("Environment_6x32r")
+
+[node name="Player" type="CharacterBody3D" parent="." unique_id=796053900 node_paths=PackedStringArray("Planet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 51, 0)
+script = ExtResource("3_jka67")
+MouseSens = 15.0
+Planet = NodePath("../World")
+Speed = 10.0
+Decel = 15.0
+
+[node name="Head" type="Node3D" parent="Player" unique_id=460005330]
+
+[node name="Camera3D" type="Camera3D" parent="Player/Head" unique_id=2073215330]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player" unique_id=1115719349]
+shape = SubResource("CapsuleShape3D_poc8t")

@@ -1,0 +1,42 @@
+# Godot 4.2+ specific ignores
+~*.dll
+/android/
+
+# Godot 4+ specific ignores
+.godot/
+.nomedia
+
+# Godot-specific ignores
+.import/
+export.cfg
+export_credentials.cfg
+*.tmp
+
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# Export outputs
+*.exe
+# Uncomment if your project does not version PCK files as runtime dependencies.
+# *.pck
+
+# macOS
+.DS_Store
+
+# Zipped copy of skybox/
+skybox.zip
+
+# Editor / IDE settings
+.vscode/
+.vs/
+.idea/
+*.user
+
+# .NET build output (if building outside Godot)
+bin/
+obj/

@@ -1,0 +1,95 @@
+#ifndef boid_types
+#define boid_types
+
+// Puttin 32 bit types after vec3 cuz vec3 is technically vec4 but doesn't use w and auto appends float to that space for GPU alignment shit
+struct Transform3D {
+    vec3 Position;
+    uint PartRelIndex;
+    vec3 Velocity;
+    uint Partition;
+    vec3 Acceleration;
+    float Radius;
+    vec4 Rotation;
+    vec3 GlobalPosition;
+    vec3 DesiredHeading;
+};
+
+struct SphereCollider3D {
+    float Radius;
+};
+
+struct RuleRadii {
+    float SeparationRad;
+    float AlignmentRad;
+    float CohesionRad;
+};
+
+struct RuleCoefficients {
+    float SeparationCoef;
+    float AlignmentCoef;
+    float CohesionCoef;
+};
+
+struct RuleSettings {
+    RuleRadii Radii;
+    RuleCoefficients Coefficients;
+};
+
+struct Boid {
+    Transform3D Transform;
+    SphereCollider3D Collider;
+    RuleSettings Settings;
+    float cosFov;
+    uint SchoolOffset;
+    uint Index;
+};
+
+layout(set = 0, binding = 3, std430) uniform Planet {
+    vec3 Centre;
+    float Radius;   // The radius is from center to the sky limit
+    float Gravity;
+    uint NumPartitions;
+    uint PartitionsPerAxis;
+    float PartitionSize;
+    // For debug build, will be taken out when we do noise terrain gen
+    float GroundRadius;
+} planet;
+
+layout(set=0, binding=0, std430) restrict buffer BoidData {
+    Boid boids[];
+};
+
+layout(set=0, binding=5, std430) restrict buffer SchoolData {
+    uint schoolCounts[];
+};
+
+layout(set=0, binding=1, std430) restrict buffer PartitionCounts {
+    // Amount of boids in each partition per school, size of # partitions
+    // After summing step, this becomes the partition indices
+    uint partCounts[];
+    // Gotta count occurances, each thread check it's partition and atomic add to count, saving result as boid index in partition (Count is zeroed by CPU)
+    // Use parallel sum after to get the running sum of each partition (Blelloch padded)
+    // Last step of sum functions should put the count in their partition as well
+    // Each boid gets a thread, read partition index, write your index direct to your slot
+};
+
+layout(set=0, binding=4, std430) restrict buffer PartitionIndices {
+    uint partIdx[];
+};
+
+layout(set=0, binding=2, std430) restrict buffer PartitionBoids {
+    // Boid data copied over in sorted order (copied for better cache coherence with same partition boids)
+    Boid sortedBoids[];
+};
+
+uint GetPartition(vec3 position) {
+    vec3 positivePos = (position + planet.Radius)/planet.PartitionSize;
+    return uint(floor(min(max(positivePos.x, 0), planet.NumPartitions)+min(max(positivePos.y, 0), planet.NumPartitions)+min(max(positivePos.z, 0), planet.NumPartitions)));
+}
+
+vec3 GetPartitionCentre(uint partitionId) {
+    // Reverse ops and scale back to world space
+    return vec3(mod(partitionId, planet.NumPartitions), mod((partitionId / planet.NumPartitions), planet.NumPartitions), partitionId / (planet.NumPartitions * planet.NumPartitions)) * planet.PartitionSize - planet.Radius + 0.5 * planet.PartitionSize;
+}
+
+#endif
