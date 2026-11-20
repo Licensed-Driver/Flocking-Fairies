@@ -5,6 +5,8 @@
 
 #include "boid.head"
 
+layout(local_size_x=128, local_size_y=1, local_size_z=1) in;
+
 void processRules(uint id);
 void getNeighbourParts(vec3 position, uint partitionId, out uint[8] neighbourKeys);
 vec3 quatRotate(vec4 quat, vec3 vec);

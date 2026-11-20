@@ -44,23 +44,8 @@ struct Boid {
     uint Index;
 };
 
-layout(set = 0, binding = 3, std430) uniform Planet {
-    vec3 Centre;
-    float Radius;   // The radius is from center to the sky limit
-    float Gravity;
-    uint NumPartitions;
-    uint PartitionsPerAxis;
-    float PartitionSize;
-    // For debug build, will be taken out when we do noise terrain gen
-    float GroundRadius;
-} planet;
-
 layout(set=0, binding=0, std430) restrict buffer BoidData {
     Boid boids[];
-};
-
-layout(set=0, binding=5, std430) restrict buffer SchoolData {
-    uint schoolCounts[];
 };
 
 layout(set=0, binding=1, std430) restrict buffer PartitionCounts {
@@ -73,13 +58,28 @@ layout(set=0, binding=1, std430) restrict buffer PartitionCounts {
     // Each boid gets a thread, read partition index, write your index direct to your slot
 };
 
+layout(set=0, binding=2, std430) restrict buffer PartitionBoids {
+    // Boid data copied over in sorted order (copied for better cache coherence with same partition boids)
+    Boid sortedBoids[];
+};
+
+layout(set = 0, binding = 3, std430) uniform Planet {
+    vec3 Centre;
+    float Radius;   // The radius is from center to the sky limit
+    float Gravity;
+    uint NumPartitions;
+    uint PartitionsPerAxis;
+    float PartitionSize;
+    // For debug build, will be taken out when we do noise terrain gen
+    float GroundRadius;
+} planet;
+
 layout(set=0, binding=4, std430) restrict buffer PartitionIndices {
     uint partIdx[];
 };
 
-layout(set=0, binding=2, std430) restrict buffer PartitionBoids {
-    // Boid data copied over in sorted order (copied for better cache coherence with same partition boids)
-    Boid sortedBoids[];
+layout(set=0, binding=5, std430) restrict buffer SchoolData {
+    uint schoolCounts[];
 };
 
 uint GetPartition(vec3 position) {
